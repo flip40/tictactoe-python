@@ -4,8 +4,8 @@ from django.db import models
 class Message(models.Model):
 	text = models.CharField(unique=True, max_length=255)
 
-		def __unicode__(self):
-				return u'%s: %s' % (self.id, self.text)
+	def __unicode__(self):
+		return u'%s: %s' % (self.id, self.text)
 
-		class Meta:
-				db_table = u'Messages'
+	class Meta:
+		db_table = u'Messages'
