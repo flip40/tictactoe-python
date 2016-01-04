@@ -1,15 +1,33 @@
-<html>
-<head>
-</head>
-<body>
-	<div>
-		<div>
-			<textarea></textarea>
-		</div>
-		<div>
-			<input type="text" />
-			<button>Send</button>
-		</div>
+{% extends 'base.html' %}
+
+{% block body %}
+<div>
+	<div id="chatbox">
+		
 	</div>
-</body>
-</html>
+	<div>
+		<input id="message" type="text" />
+		<button onclick="sendmessage()">Send</button>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+	//set update on timer
+	
+	//update
+	function update() {
+		//ajax to check for new messages
+		//$("#chatbox").append();
+	}
+	
+	//send message
+	function sendmessage() {
+		var message = $("#message").val();
+		$("#message").val("");
+		
+		//ajax send message
+	}
+</script>
+{% endblock %}

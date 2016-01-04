@@ -1,2 +1,12 @@
-{{ name }}
-test
+{% load staticfiles %}
+<html>
+<head>
+</head>
+<body>
+{% block body %}
+{% endblock %}
+<script src="{% static 'js/jquery-1.11.3.min.js' %}"></script>
+{% block scripts %}
+{% endblock %}
+</body>
+</html>
