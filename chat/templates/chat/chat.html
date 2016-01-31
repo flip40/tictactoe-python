@@ -7,7 +7,7 @@
 	</div>
 	<div>
 		<input id="message" type="text" />
-		<button onclick="sendmessage()">Send</button>
+		<button id="sendmessage">Send</button>
 	</div>
 </div>
 {% endblock %}
@@ -23,13 +23,17 @@
 			url: "{% url 'chat:updatechat' %}",
 			dataType: "json",
 			success: function(json) {
-				$("#chatbox").append("<span>"++"</span>");
+				console.log("message found");
+				$("#chatbox").append("<span>"+json+"</span>");
 			},
+			error: function() {
+				console.log("updage error");
+			}
 		});
 	}, 100);
 	
 	//send message
-	function sendmessage() {
+	$('#sendmessage').on('click', function() {
 		var message = $("#message").val();
 		$("#message").val("");
 		
@@ -37,8 +41,14 @@
 		$.ajax({
 			url: "{% url 'chat:sendmessage' %}",
 			type: "POST",
-			data: {message: message}
+			data: {message: message},
+			success: function() {
+				console.log("message sent");
+			},
+			error: function() {
+				console.log("send error");
+			}
 		});
-	}
+	});
 </script>
 {% endblock %}
