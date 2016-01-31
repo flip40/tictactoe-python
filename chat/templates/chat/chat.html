@@ -15,7 +15,7 @@
 {% block scripts %}
 <script type="text/javascript">
 	//set update on timer
-	setTimeout(function() {
+	setInterval(function() {
 		//clear old messages (should change to just add new messages instead of add all, will improve)
 		$("#chatbox").empty();
 		//ajax to check for new messages
