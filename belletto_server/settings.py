@@ -70,7 +70,8 @@ DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.mysql',
 		'NAME': 'belletto_server',
-		'USER': '',
+		'USER': 'chatadmin',
+		'PASSWORD': 'hui4SSw5w5hW52JKEah0280h',
 		'HOST': 'localhost',
 		'PORT': '3306',
 	}
@@ -94,3 +95,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
