@@ -15,12 +15,18 @@
 {% block scripts %}
 <script type="text/javascript">
 	//set update on timer
-	
-	//update
-	function update() {
+	setTimeout(function() {
+		//clear old messages (should change to just add new messages instead of add all, will improve)
+		$("#chatbox").empty();
 		//ajax to check for new messages
-		//$("#chatbox").append();
-	}
+		$.ajax({
+			url: "{% url 'chat:updatechat' %}",
+			dataType: "json",
+			success: function(json) {
+				$("#chatbox").append("<span>"++"</span>");
+			},
+		});
+	}, 100);
 	
 	//send message
 	function sendmessage() {
@@ -28,6 +34,11 @@
 		$("#message").val("");
 		
 		//ajax send message
+		$.ajax({
+			url: "{% url 'chat:sendmessage' %}",
+			type: "POST",
+			data: {message: message}
+		});
 	}
 </script>
 {% endblock %}

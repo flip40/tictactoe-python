@@ -8,4 +8,4 @@ class Message(models.Model):
 		return u'%s: %s' % (self.id, self.text)
 
 	class Meta:
-		db_table = u'Messages'
+		db_table = u'messages'
