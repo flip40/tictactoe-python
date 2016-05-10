@@ -1,5 +1,5 @@
 """
-WSGI config for belletto_server project.
+WSGI config for tictactoe_server project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

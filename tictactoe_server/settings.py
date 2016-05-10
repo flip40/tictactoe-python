@@ -1,5 +1,5 @@
 """
-Django settings for belletto_server project.
+Django settings for tictactoe_server project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -18,7 +18,7 @@ STATICFILES_DIRS = (
 	os.path.join(BASE_DIR, "static"),
 )
 
-STATIC_ROOT = '/var/local/belletto_server/current/belletto_server/static_root/'
+STATIC_ROOT = '/var/local/tictactoe_server/current/belletto_server/static_root/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -58,9 +58,9 @@ MIDDLEWARE_CLASSES = (
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'belletto_server.urls'
+ROOT_URLCONF = 'tictactoe_server.urls'
 
-WSGI_APPLICATION = 'belletto_server.wsgi.application'
+WSGI_APPLICATION = 'tictactoe_server.wsgi.application'
 
 
 # Database
@@ -69,7 +69,7 @@ WSGI_APPLICATION = 'belletto_server.wsgi.application'
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.mysql',
-		'NAME': 'belletto_server',
+		'NAME': 'tictactoe_server',
 		'USER': 'chatadmin',
 		'PASSWORD': 'hui4SSw5w5hW52JKEah0280h',
 		'HOST': 'localhost',
