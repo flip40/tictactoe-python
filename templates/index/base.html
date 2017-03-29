@@ -4,9 +4,341 @@
 </head>
 <body>
 {% block body %}
+<pre>
+# Author: Johnathon Ludeman
+# Date 05/10/16
+# Description: It&#39;s TicTacToe. What do you expect? Runs on http://tictactoe.ludeman.com/
+# Requirements: This is written for Python 2.7, and requires the requests module (http://docs.python-requests.org/en/master/user/install/)
+# Python 2to3: If you want to try upgrading this to Python 3 (https://docs.python.org/2/library/2to3.html)
+# NOTE: It appears that the only change required for Python 3 is the Tkinter import
+# Change Tkinter to tkinter (lowercase T)
+
+from Tkinter import *		# Python 2
+# from tkinter import *		# Python 3
+import requests
+
+############################################################
+# The Game class represents the database values as an object
+class Game():
+	def __init__(self, game_list, window = None):
+		self.id = game_list[&#39;pk&#39;]
+		self.name = game_list[&#39;name&#39;]
+		self.player1 = game_list[&#39;player1&#39;]
+		self.player2 = game_list[&#39;player2&#39;]
+		self.gamestate = game_list[&#39;gamestate&#39;]
+		self.turn = game_list[&#39;turn&#39;]
+		self.players = game_list[&#39;players&#39;]
+		self.leaver = game_list[&#39;leaver&#39;]
+		self.winner = game_list[&#39;winner&#39;]
+		self.draw = game_list[&#39;draw&#39;]
+		self.playing = False
+		if window:
+			self.window = window
+			self.update_rate = 1000
+			self.window.after(self.update_rate, self.update)
+
+	# Update the game data
+	def update(self):
+		game_list = requests.get(&quot;http://tictactoe.ludeman.com/get_game/&quot;, params={&#39;id&#39;: self.id}).json()
+		self.player1 = game_list[&#39;player1&#39;]
+		self.player2 = game_list[&#39;player2&#39;]
+		self.gamestate = game_list[&#39;gamestate&#39;]
+		self.turn = game_list[&#39;turn&#39;]
+		self.players = game_list[&#39;players&#39;]
+		self.leaver = game_list[&#39;leaver&#39;]
+		self.winner = game_list[&#39;winner&#39;]
+		self.draw = game_list[&#39;draw&#39;]
+		if self.player2 == &quot;&quot; or self.leaver or self.winner != &quot;&quot; or self.draw:
+			self.playing = False
+		else:
+			self.playing = True
+		self.window.after(self.update_rate, self.update)
+
+	def __str__(self):
+		return &quot;%s: %s&quot; % (self.id, self.name)
+
+	def __repr__(self):
+		return self.__str__()
+
+###########################
+# Board Window
+# Displays the game board
+###########################
+
+##########################################
+# Player1 label, updates with player name
+class Player1(Label, object):
+	def __init__(self, window, game):
+		self.window = window
+		self.game = game
+		self.str = StringVar()
+		self.str.set(&quot;&#39;X&#39; Player: %s&quot; % self.game.player1)
+		super(Player1, self).__init__(window, textvariable = self.str)
+		self.update_rate = 100
+		self.window.after(self.update_rate, self.update)
+
+	# Update player1 name label
+	def update(self):
+		self.str.set(&quot;&#39;X&#39; Player: %s&quot; % self.game.player1)
+		self.window.after(self.update_rate, self.update)
+
+##########################################
+# Player2 label, updates with player name
+class Player2(Label, object):
+	def __init__(self, window, game):
+		self.window = window
+		self.game = game
+		self.str = StringVar()
+		self.str.set(&quot;&#39;O&#39; Player: %s&quot; % self.game.player2)
+		super(Player2, self).__init__(window, textvariable = self.str)
+		self.update_rate = 100
+		self.window.after(self.update_rate, self.update)
+
+	# Update player2 name label
+	def update(self):
+		self.str.set(&quot;&#39;O&#39; Player: %s&quot; % self.game.player2)
+		self.window.after(self.update_rate, self.update)
+
+##############################################
+# Status label updates the status of the game
+class Status(Label, object):
+	def __init__(self, window, game, token, username):
+		self.window = window
+		self.game = game
+		self.token = token
+		self.username = username
+		self.str = StringVar()
+		self.str.set(&quot;&quot;)
+		super(Status, self).__init__(window, textvariable = self.str)
+		self.update_rate = 100
+		self.window.after(self.update_rate, self.update)
+
+	# Update game status label
+	def update(self):
+		if self.game.player2 == &quot;&quot;:
+			self.str.set(&quot;Waiting for opponent...&quot;)
+		elif self.game.winner != &quot;&quot;:
+			if self.game.winner == self.token:
+				victor = self.username
+			else:
+				if self.username == self.game.player1:
+					victor = self.game.player2
+				else:
+					victor = self.game.player1
+			self.str.set(&quot;%s (Player &#39;%s&#39;) won!&quot; % (victor, self.game.winner))
+		elif self.game.draw:
+			self.str.set(&quot;Game is a draw!&quot;)
+		elif self.game.leaver:
+			self.str.set(&quot;Opponent left, you win!&quot;)
+		else:
+			self.str.set(&quot;Player %s&#39;s turn.&quot; % self.game.turn)
+		self.window.after(self.update_rate, self.update)
+
+#################################################
+# Space label represents each square on the grid
+# Labels react to being clicked
+class Space(Label, object):
+	def __init__(self, row, column, window, game, token):
+		self.row = row
+		self.column = column
+		self.window = window
+		self.game = game
+		self.token = token
+		self.str = StringVar()
+		self.str.set(&quot;&quot;)
+		super(Space, self).__init__(window, font = (&quot;Arial&quot;, 150), textvariable = self.str, width = 2, height = 1, highlightbackground = &quot;black&quot;, highlightthickness = 5)
+		self.bind(&quot;&lt;Button-1&gt;&quot;, self.select)
+		self.update_rate = 100
+		self.window.after(self.update_rate, self.update)
+
+	# React to being clicked. Updates if it is your turn.
+	def select(self, event):
+		if self.game.playing and self.game.turn == self.token and self.str.get() == &quot;&quot;:
+			self.str.set(self.token)
+			response = requests.get(&quot;http://tictactoe.ludeman.com/take_spot/&quot;, params={&#39;id&#39;: self.game.id, &#39;token&#39;: self.token, &#39;row&#39;: self.row, &#39;column&#39;: self.column}).json()
+			if response[&#39;valid&#39;]:
+				self.game.update()
+
+	# Update to match Game object. Makes sure this is in sync with the server gamestate.
+	def update(self):
+		self.str.set(self.game.gamestate[self.row][self.column])
+		if self.game.winner != &quot;&quot;:
+			if self.game.winner == self.token:
+				color = &quot;green&quot;
+			else:
+				color = &quot;red&quot;
+			if self.game.winner == self.str.get():
+				self.config(background = color)
+		elif self.game.draw or self.game.leaver:
+			self.config(background = &quot;grey&quot;)
+		self.window.after(self.update_rate, self.update)
+
+################################################
+# boardWindow function defines the board window
+def boardWindow(username, gameid, token):
+	window = Tk()
+
+	# Create Game object
+	game = Game(requests.get(&quot;http://tictactoe.ludeman.com/get_game/&quot;, params={&#39;id&#39;: gameid}).json(), window=window)
+
+	window.title(&quot;TicTacToe - %s&quot; % game.name)
+
+	# Create Player and Status labels
+	Player1(window, game).grid(row = 0, column = 0)
+	Status(window, game, token, username).grid(row = 0, column = 1)
+	Player2(window, game).grid(row = 0, column = 2)
+
+	# Create TicTacToe grid
+	for row in range(1, 4):
+		for column in range(0, 3):
+			Space(row - 1, column, window, game, token).grid(row = row, column = column)
+
+	# Notify server if you leave the game by closing the window
+	def on_close(window, gameid):
+		requests.get(&quot;http://tictactoe.ludeman.com/leave_game/&quot;, params={&#39;id&#39;: gameid})
+		window.destroy()
+
+	# Assign function to window close event
+	window.protocol(&quot;WM_DELETE_WINDOW&quot;, lambda *args: on_close(window, gameid))
+
+	window.mainloop()
+
+###########################
+# Server Window
+# Displays the game list
+###########################
+
+#######################################################
+# getGames function returns the list of joinable games
+def getGames():
+	games_lists = requests.get(&quot;http://tictactoe.ludeman.com/get_games/&quot;).json()
+	return [Game(game_list) for game_list in games_lists]
+
+############################################################################
+# ServerList class is a listbox that displays available games
+# Can join game through double clicking (bind) or button (see serverWindow)
+class ServerList(Listbox, object):
+	def __init__(self, window):
+		self.window = window
+		super(ServerList, self).__init__(window)
+		self.game_list = getGames()
+		for game in self.game_list:
+			self.insert(END, game)
+
+	# Refresh games list
+	def refresh(self):
+		self.delete(0, END)
+		self.game_list = getGames()
+		for game in self.game_list:
+			self.insert(END, game)
+
+############################################
+# joinGame function attempts to join a game
+# Refreshes server list if failed to join
+def joinGame(game, window, username, server_list):
+	response = requests.get(&quot;http://tictactoe.ludeman.com/join_game/&quot;, params={&#39;id&#39;: game.id, &#39;name&#39;: username}).json()
+	if response[&#39;joined&#39;]:
+		window.destroy()
+		boardWindow(username, game.id, response[&#39;token&#39;])
+	else:
+		server_list.refresh()
+
+##################################################################
+# createGame function creates a new game and goes to board window
+def createGame(game_name, window, username):
+	if not len(game_name) &gt; 0:
+		return
+	data = {&#39;name&#39;: game_name, &#39;player&#39;: username}
+	response = requests.get(&quot;http://tictactoe.ludeman.com/create_game/&quot;, params=data).json()
+	if response[&#39;created&#39;]:
+		window.destroy()
+		boardWindow(username, response[&#39;gameid&#39;], response[&#39;token&#39;])
+
+##################################################
+# serverWindow functino defines the Server Window
+def serverWindow(username):
+	window = Tk()
+	window.title(&quot;Server List&quot;)
+
+	# create game lambda for callbacks
+	create_game_function = lambda *args: createGame(game_input.get().strip(), window, username)
+
+	# Create ServerList
+	server_list = ServerList(window)
+
+	# join game lambda for callbacks
+	join_game_function = lambda *args: joinGame(server_list.game_list[int(server_list.curselection()[0])], window, username, server_list)
+
+	# Place ServerList and add double click binding to join game
+	server_list.grid(row = 1, column = 0)
+	server_list.bind(&quot;&lt;Double-Button-1&gt;&quot;, join_game_function)
+
+	# Create Refresh Button to refresh the ServerList
+	Button(window, text=&quot;Refresh list&quot;, command = server_list.refresh).grid(row = 0, column = 0)
+
+	# Create Join Game button to join a game
+	Button(window, text=&quot;Join game&quot;, command = join_game_function).grid(row = 2, column = 0)
+
+	# Create Create Game label
+	Label(window, text=&quot;Create game:&quot;).grid(row = 3, column = 0)
+
+	# Create Create Game entry for a game name and bind to create lambda
+	game_input = Entry(window)
+	game_input.grid(row = 4, column = 0)
+	game_input.bind(&quot;&lt;Return&gt;&quot;, create_game_function)
+
+	# Create Create Game button and assign create lambda
+	Button(window, text=&quot;Create game&quot;, command = create_game_function).grid(row = 5, column = 0)
+
+	window.mainloop()
+
+###########################################
+# Name Window
+# Introductory window to set your username
+###########################################
+
+#########################################################
+# setName function sets username and opens Server Window
+def setName(username, window):
+	if not len(username) &gt; 0:
+		return
+	window.destroy()
+	serverWindow(username)
+
+###############################################
+# nameWindow function defines the Name Window
+def nameWindow():
+	window = Tk()
+	window.title(&quot;TicTacToe&quot;)
+
+	# login lambda function
+	login_function = lambda *args: setName(name_input.get().strip(), window)
+
+	# Create Choose Name label
+	Label(window, text=&quot;Choose a name:&quot;).grid(row = 0, column = 0)
+
+	# Create Entry for username and bind login lambda
+	name_input = Entry(window)
+	name_input.grid(row = 1, column = 0)
+	name_input.bind(&quot;&lt;Return&gt;&quot;, login_function)
+
+	# Create Set name button and assign login lambda
+	Button(window, text=&quot;Set name&quot;, command = login_function).grid(row = 2, column = 0)
+
+	window.mainloop()
+
+##########################################################
+# main does main things. Name Window is the first window.
+def main():
+	nameWindow()
+
+# and finally the call to main
+main()
+
+</pre>
 {% endblock %}
-<script src="{% static 'js/jquery-1.11.3.min.js' %}"></script>
 {% block scripts %}
 {% endblock %}
 </body>
 </html>
+
